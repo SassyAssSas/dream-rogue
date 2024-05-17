@@ -1,0 +1,23 @@
+using UnityEngine;
+
+namespace ##NAMESPACE## {
+   public class ##NAME####STATENAME##State : ##NAME##ViewModel.State {
+      private ##NAME####STATENAME##StateConfig _config;
+
+      private ##NAME####STATENAME##State(##NAME##ViewModel viewModel, ##NAME####STATENAME##StateConfig config) : base(viewModel) {
+	      _config = config;
+      }
+
+      public class Factory {
+         private ##NAME####STATENAME##StateConfig _config;
+
+         public Factory(##NAME####STATENAME##StateConfig config) {
+            _config = config;
+         }
+
+         public ##NAME####STATENAME##State Create(##NAME##ViewModel viewModel) {
+            return new ##NAME####STATENAME##State(viewModel, _config);
+         }
+      }
+   }
+}

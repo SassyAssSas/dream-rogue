@@ -1,0 +1,23 @@
+using UnityEngine;
+using Violoncello.Structurization;
+using Violoncello.Utilities;
+using Zenject;
+
+namespace ##NAMESPACE## {
+	[CreateAssetMenu(fileName = "##NAME##Installer", menuName = "##MENUNAME##")]
+	public class ##NAME##Installer : ScriptableObjectInstaller<##NAME##Installer> {
+##SERIALIZEDCONFIGS##
+	
+		public override void InstallBindings() {
+			ValidateSerializedFields();
+			
+##INSTALLATION##
+		}
+		
+##METHODS##
+		
+		private void ValidateSerializedFields() {
+##VALIDATION##
+		}
+	}
+}

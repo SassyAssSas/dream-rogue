@@ -1,0 +1,39 @@
+using UnityEngine;
+using Violoncello.Services;
+using Violoncello.Structurization;
+using Zenject;
+
+namespace ##NAMESPACE## {
+	public class ##NAME##Presenter : ##NAME##ViewModel.Presenter, ITickable {
+##FIELDS##
+
+      public ##NAME##Presenter(
+##CONSTRUCTORARGUMENTS##
+      ) {
+##CONSTRUCTORBODY##
+      }
+      
+		protected override void OnViewModelBound(##NAME##ViewModel viewModel, IStateMachine<##NAME##ViewModel.State> stateMachine) {
+         base.OnViewModelBound(viewModel, stateMachine);
+
+
+      }
+
+      protected override void OnViewModelUnbound(##NAME##ViewModel viewModel) {
+         base.OnViewModelUnbound(viewModel);
+
+
+      }
+
+       public void Tick() {
+         foreach (var pair in ViewModelStateMachinePairs) {
+            var viewModel = pair.Key;
+            var stateMachine = pair.Value;
+
+            if (viewModel.gameObject.activeInHierarchy) {
+               stateMachine?.CurrentState.Tick(Time.deltaTime);
+            }
+         }
+      }
+	}
+}

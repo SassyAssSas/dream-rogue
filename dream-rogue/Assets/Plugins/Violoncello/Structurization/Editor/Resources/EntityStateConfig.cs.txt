@@ -1,0 +1,8 @@
+using UnityEngine;
+
+namespace ##NAMESPACE## {
+	[CreateAssetMenu(fileName = "##NAME####STATENAME##StateConfig", menuName = "##MENUNAME##")]
+	public class ##NAME####STATENAME##StateConfig : ScriptableObject {
+		
+	} 
+}

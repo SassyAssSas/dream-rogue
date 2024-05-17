@@ -1,0 +1,16 @@
+{
+    "name": "Violoncello.Utilities",
+    "rootNamespace": "Violoncello.Utilities",
+    "references": [
+        "GUID:95b83497a2e70424b9dcf1b409e04ca2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

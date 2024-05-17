@@ -1,0 +1,44 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Violoncello.Services;
+using Violoncello.Utilities;
+using Violoncello.Structurization;
+
+namespace ##NAMESPACE## {
+	public class ##NAME##ViewModel : ##BASECLASS##<##NAME##ViewModel> {
+##PROPERTIES##
+
+##METHODS##
+
+		public new abstract class Presenter<TState> : ##BASECLASS##<##NAME##ViewModel>.Presenter<TState> where TState : State {
+			protected override void OnViewModelBound(##NAME##ViewModel viewModel, IStateMachine<TState> stateMachine) {
+				base.OnViewModelBound(viewModel, stateMachine);
+				
+##BIND##
+			}
+
+			protected override void OnViewModelUnbound(##NAME##ViewModel viewModel) {
+				base.OnViewModelUnbound(viewModel);
+				
+##UNBIND##	
+			}
+
+##PRESENTEREVENTCALLBACKS##
+		}
+
+		public new abstract class Presenter : Presenter<State> { 
+		   
+		}
+
+		public new abstract class State : ##BASECLASS##<##NAME##ViewModel>.State {
+##STATEPROPERTIESREFERENCES##
+
+			protected State(##NAME##ViewModel viewModel) : base(viewModel) {
+				
+			}
+
+##STATEEVENTCALLBACKS##
+		}
+	}
+}

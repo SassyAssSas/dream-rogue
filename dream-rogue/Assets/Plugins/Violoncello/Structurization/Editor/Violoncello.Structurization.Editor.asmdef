@@ -1,0 +1,18 @@
+{
+    "name": "Violoncello.Structurization.Editor",
+    "rootNamespace": "Violoncello.Structurization.Editor",
+    "references": [
+        "GUID:daf02e844dffba644ac8398f68622ef9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

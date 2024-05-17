@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcb89d094d6815340adb757a9edcc934, type: 3}
+  m_Name: PlayerInstaller
+  m_EditorClassIdentifier: 
+  _playerMovementStateConfig: {fileID: 11400000, guid: 8bf7e56d5be75f2409e38b85f5e7ffe2, type: 2}
+  _playerFightingStateConfig: {fileID: 11400000, guid: 0cfec6b1f15fdd742a93e12340d489b4, type: 2}
+  _playerDashStateConfig: {fileID: 11400000, guid: a373a8b62e1143b4ba37ea97a4478db2, type: 2}
+  _playerQuickfallStateConfig: {fileID: 11400000, guid: cfe13cc75d1b31146b19acf923605f0a, type: 2}
+  _playerJumpingStateConfig: {fileID: 11400000, guid: f5c87f00d9823644ca0bd18a4a6c758f, type: 2}

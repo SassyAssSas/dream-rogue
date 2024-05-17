@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ae683f5fda7aac47a4ebbc4f6a848b4, type: 3}
+  m_Name: ModelsAssetsCollection
+  m_EditorClassIdentifier: 
+  <Name>k__BackingField: Models
+  _assets:
+  - <Name>k__BackingField: floor-tile-full
+    <Object>k__BackingField: {fileID: 919132149155446097, guid: bf09e77c4741bf5428a2fb5cffe7e032, type: 3}
+  - <Name>k__BackingField: floor-tile-peninsula
+    <Object>k__BackingField: {fileID: 919132149155446097, guid: bf724ea3cb2eec04f878d9bad1f2af22, type: 3}
+  - <Name>k__BackingField: floor-tile-corner
+    <Object>k__BackingField: {fileID: 919132149155446097, guid: 022d5d0d367f13f4baf8608972379ef5, type: 3}
