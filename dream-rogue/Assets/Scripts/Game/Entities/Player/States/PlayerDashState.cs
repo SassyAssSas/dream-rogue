@@ -40,6 +40,13 @@ namespace SecretHostel.DreamRogue {
       }
 
       private async UniTaskVoid DashAsync(CancellationToken cancellationToken) {
+         if (Time.timeAsDouble - LastDashTime < _config.DashCooldownSeconds) {
+            FinishState(0);
+            return;
+         }
+
+         LastDashTime = Time.timeAsDouble;
+
          var startPosition = ViewModel.transform.position;
          var targetPosition = ViewModel.transform.position + ViewModel.transform.forward * _config.DashDistance;
 

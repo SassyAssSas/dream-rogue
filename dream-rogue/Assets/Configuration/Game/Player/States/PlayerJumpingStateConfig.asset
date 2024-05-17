@@ -15,3 +15,5 @@ MonoBehaviour:
   <HorizontalMovementSpeed>k__BackingField: 15
   <RotationSpeed>k__BackingField: 20
   <JumpForce>k__BackingField: 17
+  <JumpGroundDistance>k__BackingField: 0.25
+  <PrepareJumpGroundDistance>k__BackingField: 2

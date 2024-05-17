@@ -13,6 +13,8 @@ namespace SecretHostel.DreamRogue {
 
       private CancellationTokenSource cts;
 
+      private bool canDash = false;
+
       private PlayerJumpingState(PlayerViewModel viewModel, PlayerJumpingStateConfig config) : base(viewModel) {
          _config = config;
 
@@ -25,7 +27,7 @@ namespace SecretHostel.DreamRogue {
       public override void EnterState() {
          cts = new();
 
-         Jump(cts.Token).Forget();
+         JumpAsync(cts.Token).Forget();
       }
 
       public override void QuitState() {
@@ -34,7 +36,7 @@ namespace SecretHostel.DreamRogue {
       }
 
       public override void Tick(float deltaTime) {
-         if (input.Player.Dash.inProgress) {
+         if (input.Player.Dash.inProgress && canDash) {
             FinishState(1);
             return;
          }
@@ -50,9 +52,9 @@ namespace SecretHostel.DreamRogue {
          CalculateMotion(fixedDeltaTime);
       }
 
-      private async UniTaskVoid Jump(CancellationToken cancellationToken) {
-         await UniTask.WaitForFixedUpdate(cancellationToken);
-         if (cancellationToken.IsCancellationRequested) {
+      private async UniTaskVoid JumpAsync(CancellationToken cancellationToken) {
+         if (!IsGroundClose(_config.PrepareJumpGroundDistance)) {
+            FinishState(0);
             return;
          }
 
@@ -61,16 +63,18 @@ namespace SecretHostel.DreamRogue {
             return;
          }
 
-         const float performJumpGroundDistance = 0.25f;
+         canDash = false;
 
-         await UniTask.WaitUntil(() => IsGroundClose(performJumpGroundDistance), cancellationToken: cancellationToken);
+         await UniTask.WaitUntil(() => IsGroundClose(_config.JumpGroundDistance), cancellationToken: cancellationToken);
          if (cancellationToken.IsCancellationRequested) {
             return;
          }
 
+         canDash = true;
+
          Rigidbody.velocity = Rigidbody.velocity.But(y: _config.JumpForce);
 
-         await UniTask.WaitUntil(() => IsGroundClose(performJumpGroundDistance) && Rigidbody.velocity.y < 0f, cancellationToken: cancellationToken);
+         await UniTask.WaitUntil(() => IsGroundClose(_config.JumpGroundDistance) && Rigidbody.velocity.y < 0f, cancellationToken: cancellationToken);
          if (cancellationToken.IsCancellationRequested) {
             return;
          }

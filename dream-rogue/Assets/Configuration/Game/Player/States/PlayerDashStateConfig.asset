@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 195db10096d6fe04fbd0ff143b4560d8, type: 3}
   m_Name: PlayerDashStateConfig
   m_EditorClassIdentifier: 
+  <DashCooldownSeconds>k__BackingField: 0.6
   <DashTimeSeconds>k__BackingField: 0.2
   <DashDistance>k__BackingField: 5

@@ -13,7 +13,7 @@ namespace SecretHostel.DreamRogue {
 		public float MaxHealth { get; private set; }
 		private event Action<PlayerViewModel, float> OnMaxHealthSetRequested;
 
-		private float timeSinceDash;
+		private double lastDashTime;
 
       private Rigidbody _rigidBody;
 
@@ -74,9 +74,9 @@ namespace SecretHostel.DreamRogue {
 				set => ViewModel.MaxHealth = value;
 			}
 
-         protected float TimeSinceDash {
-            get => ViewModel.timeSinceDash;
-            set => ViewModel.timeSinceDash = value;
+         protected double LastDashTime{
+            get => ViewModel.lastDashTime;
+            set => ViewModel.lastDashTime = value;
          }
 
          protected Rigidbody Rigidbody {
