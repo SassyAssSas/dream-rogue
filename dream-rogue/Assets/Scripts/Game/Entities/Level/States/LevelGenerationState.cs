@@ -11,24 +11,26 @@ namespace SecretHostel.DreamRogue {
 
       private const string fullTileKey = "full";
       private const string cornerTileKey = "corner";
+      private const string peninsulaTileKey = "peninsula";
 
       private LevelGenerationState(LevelViewModel viewModel, LevelGenerationStateConfig config, IAssetsLoader assetsLoader) : base(viewModel) {
          _config = config;
 
          var full = assetsLoader.Load<GameObject>("Models", "floor-tile-full");
          var corner = assetsLoader.Load<GameObject>("Models", "floor-tile-corner");
+         var peninsula = assetsLoader.Load<GameObject>("Models", "floor-tile-peninsula");
 
          floorTilesPrefabs = new() {
             { fullTileKey, full },
-            { cornerTileKey, corner }
+            { cornerTileKey, corner },
+            { peninsulaTileKey, peninsula }
          };
       }
 
       public override void EnterState() {
          var startRoom = new Room(new Vector2Int(16, 12), (Exits)0b_1111);
-         SpawnRoom(startRoom, new Vector3(0.5f, 0.5f));
 
-         
+         SpawnRoom(startRoom, new Vector3(0.5f, 0.5f));
       }
 
       private void SpawnRoom(Room room, Vector2 position) {
@@ -37,8 +39,15 @@ namespace SecretHostel.DreamRogue {
          var floor = new GameObjectTile[room.Size.x, room.Size.y];
 
          CreateFloor1x1TilesNoAlloc(floor);
-         CreateFloor2x2TilesNoAlloc(floor);
-        
+
+         CreateFloor2x2TilesNoAlloc(floor, 0.2f); // Doing it in 2 turns results in more beautiful patterns
+         CreateFloor1x2TilesNoAlloc(floor, 0.1f);
+         CreateFloor2x1TilesNoAlloc(floor, 0.1f);
+
+         CreateFloor2x2TilesNoAlloc(floor, 0.1f);
+         CreateFloor1x2TilesNoAlloc(floor, 0.1f);
+         CreateFloor2x1TilesNoAlloc(floor, 0.1f);
+
          for (int i = 0; i < room.Size.x; i++) {
             for (int j = 0; j < room.Size.y; j++) {
                var tile = floor[i, j];
@@ -60,16 +69,24 @@ namespace SecretHostel.DreamRogue {
          }
       }
 
-      private void CreateFloor2x2TilesNoAlloc(GameObjectTile[,] floor) {
+      private void CreateFloor2x2TilesNoAlloc(GameObjectTile[,] floor, float concentration) {
          var width = floor.GetLength(0);
          var height = floor.GetLength(1);
 
-         var bigTilesAmount = Mathf.RoundToInt(width * height / 4f * 0.25f);
+         var bigTilesAmount = Mathf.RoundToInt(width * height / 4f * concentration);
 
          var possiblePositions = new List<Vector2Int>();
 
          for (int x = 0; x < width - 1; x++) {
             for (int y = 0; y < height - 1; y++) {
+               if (floor[x, y].Prefab != floorTilesPrefabs[fullTileKey] ||
+                   floor[x, y + 1].Prefab != floorTilesPrefabs[fullTileKey] ||
+                   floor[x + 1, y].Prefab != floorTilesPrefabs[fullTileKey] ||
+                   floor[x + 1, y + 1].Prefab != floorTilesPrefabs[fullTileKey]
+               ) {
+                  continue;
+               }
+
                possiblePositions.Add(new(x, y));
             }
          }
@@ -91,6 +108,82 @@ namespace SecretHostel.DreamRogue {
             floor[bottomLeftPosition.x + 1, bottomLeftPosition.y] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 180f, 0f));
             floor[bottomLeftPosition.x, bottomLeftPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 0f, 0f));
             floor[bottomLeftPosition.x + 1, bottomLeftPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 90f, 0f));
+         }
+      }
+
+      private void CreateFloor1x2TilesNoAlloc(GameObjectTile[,] floor, float concentration) {
+         var width = floor.GetLength(0);
+         var height = floor.GetLength(1);
+
+         var longTilesAmount = Mathf.RoundToInt(width * height / 4f * concentration);
+
+         var possiblePositions = new List<Vector2Int>();
+
+         for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height - 1; y++) {
+               if (floor[x, y].Prefab != floorTilesPrefabs[fullTileKey]) {
+                  continue;
+               }
+
+               if (floor[x, y + 1].Prefab != floorTilesPrefabs[fullTileKey]) {
+                  continue;
+               }
+
+               possiblePositions.Add(new(x, y));
+            }
+         }
+
+         for (int i = 0; i < longTilesAmount; i++) {
+            if (possiblePositions.Count == 0) {
+               break;
+            }
+
+            var bottomPosition = possiblePositions[Random.Range(0, possiblePositions.Count)];
+
+            for (int y = bottomPosition.y - 1; y <= bottomPosition.y + 1; y++) {
+               possiblePositions.Remove(new(bottomPosition.x, y));
+            }
+
+            floor[bottomPosition.x, bottomPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], bottomPosition, new Vector3(270f, 0f, 0f));
+            floor[bottomPosition.x, bottomPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], bottomPosition, new Vector3(270f, 180f, 0f));
+         }
+      }
+
+      private void CreateFloor2x1TilesNoAlloc(GameObjectTile[,] floor, float concentration) {
+         var width = floor.GetLength(0);
+         var height = floor.GetLength(1);
+
+         var longTilesAmount = Mathf.RoundToInt(width * height / 4f * concentration);
+
+         var possiblePositions = new List<Vector2Int>();
+
+         for (int x = 0; x < width - 1; x++) {
+            for (int y = 0; y < height; y++) {
+               if (floor[x, y].Prefab != floorTilesPrefabs[fullTileKey]) {
+                  continue;
+               }
+
+               if (floor[x + 1, y].Prefab != floorTilesPrefabs[fullTileKey]) {
+                  continue;
+               }
+
+               possiblePositions.Add(new(x, y));
+            }
+         }
+
+         for (int i = 0; i < longTilesAmount; i++) {
+            if (possiblePositions.Count == 0) {
+               break;
+            }
+
+            var leftPosition = possiblePositions[Random.Range(0, possiblePositions.Count)];
+
+            for (int x = leftPosition.x - 1; x <= leftPosition.x + 1; x++) {
+               possiblePositions.Remove(new(x, leftPosition.y));
+            }
+
+            floor[leftPosition.x, leftPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], leftPosition, new Vector3(270f, 90f, 0f));
+            floor[leftPosition.x + 1, leftPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], leftPosition, new Vector3(270f, 270f, 0f));
          }
       }
 

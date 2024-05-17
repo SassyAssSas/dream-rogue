@@ -7,23 +7,13 @@ namespace SecretHostel.DreamRogue {
    public class MenuPresenter : MenuViewModel.Presenter, ITickable {
       private ITransitionService _transitionService;
 
+      private bool isLoadingGame;
+
       [Inject]
       public MenuPresenter(
          ITransitionService transitionService
       ) {
          _transitionService = transitionService;
-      }
-
-      protected override void OnViewModelBound(MenuViewModel viewModel, IStateMachine<MenuViewModel.State> stateMachine) {
-         base.OnViewModelBound(viewModel, stateMachine);
-
-         
-      }
-
-      protected override void OnViewModelUnbound(MenuViewModel viewModel) {
-         base.OnViewModelUnbound(viewModel);
-
-
       }
 
       public void Tick() {
@@ -38,7 +28,13 @@ namespace SecretHostel.DreamRogue {
       }
 
       protected override void OnPlayButtonPressed() {
+         if (isLoadingGame) {
+            return;
+         }
+
          _transitionService.Transition("Game", TransitionOptions.SimpleFade);
+
+         isLoadingGame = true;
       }
    }
 }
