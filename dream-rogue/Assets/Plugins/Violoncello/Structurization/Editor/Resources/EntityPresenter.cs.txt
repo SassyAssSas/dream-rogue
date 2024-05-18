@@ -31,7 +31,7 @@ namespace ##NAMESPACE## {
             var stateMachine = pair.Value;
 
             if (viewModel.gameObject.activeInHierarchy) {
-               stateMachine?.CurrentState.Tick(Time.deltaTime);
+               stateMachine.CurrentState?.Tick(Time.deltaTime);
             }
          }
       }

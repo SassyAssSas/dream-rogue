@@ -9,9 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c94783fefa82f6240b229bf03f98a909, type: 3}
-  m_Name: PlayerQuickfallStateConfig
+  m_Script: {fileID: 11500000, guid: a4236859f4e070c4886374b03325c57b, type: 3}
+  m_Name: BoxInstaller
   m_EditorClassIdentifier: 
-  <FallVelocity>k__BackingField: 35
-  <EntityKnockbackMagnitude>k__BackingField: 2
-  <EntityKnockbackYVelocity>k__BackingField: 6
+  _boxIdleStateConfig: {fileID: 11400000, guid: eb4dd73c73f275447a4a82b652b268f1, type: 2}
+  _boxDestructionStateConfig: {fileID: 11400000, guid: c867f4bce5af30d4e8fd7966615caf1e, type: 2}

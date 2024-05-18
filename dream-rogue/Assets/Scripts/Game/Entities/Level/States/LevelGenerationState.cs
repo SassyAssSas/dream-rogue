@@ -7,7 +7,8 @@ namespace SecretHostel.DreamRogue {
    public class LevelGenerationState : LevelViewModel.State {
       private LevelGenerationStateConfig _config;
 
-      private Dictionary<string, GameObject> floorTilesPrefabs = new();
+      private List<Material> floorTilesMaterials;
+      private Dictionary<string, GameObject> floorTilesPrefabs;
 
       private const string fullTileKey = "full";
       private const string cornerTileKey = "corner";
@@ -16,14 +17,17 @@ namespace SecretHostel.DreamRogue {
       private LevelGenerationState(LevelViewModel viewModel, LevelGenerationStateConfig config, IAssetsLoader assetsLoader) : base(viewModel) {
          _config = config;
 
-         var full = assetsLoader.Load<GameObject>("Models", "floor-tile-full");
-         var corner = assetsLoader.Load<GameObject>("Models", "floor-tile-corner");
-         var peninsula = assetsLoader.Load<GameObject>("Models", "floor-tile-peninsula");
-
          floorTilesPrefabs = new() {
-            { fullTileKey, full },
-            { cornerTileKey, corner },
-            { peninsulaTileKey, peninsula }
+            { fullTileKey, assetsLoader.Load<GameObject>("Models", "floor-tile-full") },
+            { cornerTileKey, assetsLoader.Load<GameObject>("Models", "floor-tile-corner") },
+            { peninsulaTileKey, assetsLoader.Load<GameObject>("Models", "floor-tile-peninsula") }
+         };
+
+         floorTilesMaterials = new() {
+            { assetsLoader.Load<Material>("Materials", "floor-white") }, 
+            { assetsLoader.Load<Material>("Materials", "floor-lightgray") },
+            { assetsLoader.Load<Material>("Materials", "floor-gray") },
+            { assetsLoader.Load<Material>("Materials", "floor-darkgray") }
          };
       }
 
@@ -53,7 +57,7 @@ namespace SecretHostel.DreamRogue {
                var tile = floor[i, j];
                var tilePosition = new Vector3(i + offset.x, 0f, j + offset.y);
 
-               PlaceTile(tile.Prefab, tilePosition, Quaternion.Euler(tile.EulerRotation));
+               PlaceTile(tile.Prefab, tilePosition, Quaternion.Euler(tile.EulerRotation), tile.Material);
             }
          }
       }
@@ -64,7 +68,10 @@ namespace SecretHostel.DreamRogue {
 
          for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-               floor[x, y] = new GameObjectTile(floorTilesPrefabs[fullTileKey], new Vector2Int(x, y), new Vector3(270f, 0f, 0f));
+               var prefab = floorTilesPrefabs[fullTileKey];
+               var material = floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)];
+
+               floor[x, y] = new GameObjectTile(prefab, new Vector2Int(x, y), new Vector3(270f, 0f, 0f), material);
             }
          }
       }
@@ -104,10 +111,13 @@ namespace SecretHostel.DreamRogue {
                }
             }
 
-            floor[bottomLeftPosition.x, bottomLeftPosition.y] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 270f, 0f));
-            floor[bottomLeftPosition.x + 1, bottomLeftPosition.y] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 180f, 0f));
-            floor[bottomLeftPosition.x, bottomLeftPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 0f, 0f));
-            floor[bottomLeftPosition.x + 1, bottomLeftPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[cornerTileKey], bottomLeftPosition, new Vector3(270f, 90f, 0f));
+            var prefab = floorTilesPrefabs[cornerTileKey];
+            var material = floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)];
+
+            floor[bottomLeftPosition.x, bottomLeftPosition.y] = new GameObjectTile(prefab, bottomLeftPosition, new Vector3(270f, 270f, 0f), material);
+            floor[bottomLeftPosition.x + 1, bottomLeftPosition.y] = new GameObjectTile(prefab, bottomLeftPosition, new Vector3(270f, 180f, 0f), material);
+            floor[bottomLeftPosition.x, bottomLeftPosition.y + 1] = new GameObjectTile(prefab, bottomLeftPosition, new Vector3(270f, 0f, 0f), material);
+            floor[bottomLeftPosition.x + 1, bottomLeftPosition.y + 1] = new GameObjectTile(prefab, bottomLeftPosition, new Vector3(270f, 90f, 0f), material);
          }
       }
 
@@ -144,8 +154,11 @@ namespace SecretHostel.DreamRogue {
                possiblePositions.Remove(new(bottomPosition.x, y));
             }
 
-            floor[bottomPosition.x, bottomPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], bottomPosition, new Vector3(270f, 0f, 0f));
-            floor[bottomPosition.x, bottomPosition.y + 1] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], bottomPosition, new Vector3(270f, 180f, 0f));
+            var prefab = floorTilesPrefabs[peninsulaTileKey];
+            var material = floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)];
+
+            floor[bottomPosition.x, bottomPosition.y] = new GameObjectTile(prefab, bottomPosition, new Vector3(270f, 0f, 0f), material);
+            floor[bottomPosition.x, bottomPosition.y + 1] = new GameObjectTile(prefab, bottomPosition, new Vector3(270f, 180f, 0f), material);
          }
       }
 
@@ -182,8 +195,11 @@ namespace SecretHostel.DreamRogue {
                possiblePositions.Remove(new(x, leftPosition.y));
             }
 
-            floor[leftPosition.x, leftPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], leftPosition, new Vector3(270f, 90f, 0f));
-            floor[leftPosition.x + 1, leftPosition.y] = new GameObjectTile(floorTilesPrefabs[peninsulaTileKey], leftPosition, new Vector3(270f, 270f, 0f));
+            var prefab = floorTilesPrefabs[peninsulaTileKey];
+            var material = floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)];
+
+            floor[leftPosition.x, leftPosition.y] = new GameObjectTile(prefab, leftPosition, new Vector3(270f, 90f, 0f), material);
+            floor[leftPosition.x + 1, leftPosition.y] = new GameObjectTile(prefab, leftPosition, new Vector3(270f, 270f, 0f), material);
          }
       }
 
@@ -195,51 +211,57 @@ namespace SecretHostel.DreamRogue {
             var x = position.x;
             var z = position.y + room.Size.y / 2;
 
-            PlaceTile(prefab, new Vector3(x, 0, z), rotation);
-            PlaceTile(prefab, new Vector3(x - 1, 0, z), rotation);
+            PlaceTile(prefab, new Vector3(x, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+            PlaceTile(prefab, new Vector3(x - 1, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
          }
 
          if (room.Exits.HasFlag(Exits.Bottom)) {
             var x = position.x;
             var z = position.y - room.Size.y / 2 - 1;
 
-            PlaceTile(prefab, new Vector3(x, 0, z), rotation);
-            PlaceTile(prefab, new Vector3(x - 1, 0, z), rotation);
+            PlaceTile(prefab, new Vector3(x, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+            PlaceTile(prefab, new Vector3(x - 1, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
          }
 
          if (room.Exits.HasFlag(Exits.Left)) {
             var x = position.x - room.Size.x / 2 - 1;
             var z = position.y;
 
-            PlaceTile(prefab, new Vector3(x, 0, z), rotation);
-            PlaceTile(prefab, new Vector3(x, 0, z - 1), rotation);
+            PlaceTile(prefab, new Vector3(x, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+            PlaceTile(prefab, new Vector3(x, 0, z - 1), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
          }
 
          if (room.Exits.HasFlag(Exits.Right)) {
             var x = position.x + room.Size.x / 2;
             var z = position.y;
 
-            PlaceTile(prefab, new Vector3(x, 0, z), rotation);
-            PlaceTile(prefab, new Vector3(x, 0, z - 1), rotation);
+            PlaceTile(prefab, new Vector3(x, 0, z), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+            PlaceTile(prefab, new Vector3(x, 0, z - 1), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
          }
       }
 
-      private void PlaceTile(GameObject prefab, Vector3 position, Quaternion rotation) {
+      private void PlaceTile(GameObject prefab, Vector3 position, Quaternion rotation, Material material) {
          var tile = Object.Instantiate(prefab, position, rotation, GroundTilemap.transform);
 
          tile.transform.localScale = Vector3.one;
          tile.isStatic = true;
+
+         var meshRenderer = tile.GetComponent<MeshRenderer>();
+
+         meshRenderer.material = material;
       }
 
       private class GameObjectTile {
          public Vector3 EulerRotation { get; }
          public Vector2Int GridPosition { get; }
          public GameObject Prefab { get; }
+         public Material Material { get; }
 
-         public GameObjectTile(GameObject prefab, Vector2Int gridPosition, Vector3 eulerRotation) {
+         public GameObjectTile(GameObject prefab, Vector2Int gridPosition, Vector3 eulerRotation, Material material) {
             GridPosition = gridPosition;
             Prefab = prefab;
             EulerRotation = eulerRotation;
+            Material = material;
          }
       }
 
