@@ -33,7 +33,7 @@ namespace SecretHostel.DreamRogue {
 
          await UniTask.WaitUntil(() => IsGroundClose(0.25f));
 
-         var hitsAmount = Physics.OverlapSphereNonAlloc(ViewModel.transform.position, 1.5f, entityHitsBuffer);
+         var hitsAmount = Physics.OverlapSphereNonAlloc(ViewModel.transform.position, _config.EntityKnockbackStartDistance, entityHitsBuffer);
 
          for (int i = 0; i < hitsAmount; i++) {
             if (entityHitsBuffer[i].gameObject == ViewModel.gameObject) {
@@ -49,7 +49,11 @@ namespace SecretHostel.DreamRogue {
                                            .normalized
                                            .But(y: _config.EntityKnockbackYVelocity);
 
-            rigigbody.AddForce(forceDirection * _config.EntityKnockbackMagnitude, ForceMode.Impulse);
+            var distance = Vector3.Distance(ViewModel.transform.position, rigigbody.transform.position);
+
+            var distanceMultiplier = Mathf.InverseLerp(_config.EntityKnockbackStartDistance, 0f, distance - 1f);
+
+            rigigbody.AddForce(_config.EntityKnockbackMagnitude * distanceMultiplier * forceDirection, ForceMode.Impulse);
          }
 
          FinishState(0);

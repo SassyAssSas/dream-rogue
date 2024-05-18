@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: PlayerQuickfallStateConfig
   m_EditorClassIdentifier: 
   <FallVelocity>k__BackingField: 35
+  <EntityKnockbackStartDistance>k__BackingField: 2.5
   <EntityKnockbackMagnitude>k__BackingField: 2
   <EntityKnockbackYVelocity>k__BackingField: 6
