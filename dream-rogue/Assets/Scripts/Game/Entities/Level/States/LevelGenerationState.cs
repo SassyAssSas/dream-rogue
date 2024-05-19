@@ -1,9 +1,11 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Violoncello.Extensions;
 using Violoncello.Services;
+using Violoncello.Utilities;
 
 namespace SecretHostel.DreamRogue {
    public class LevelGenerationState : LevelViewModel.State {
@@ -15,8 +17,6 @@ namespace SecretHostel.DreamRogue {
       private const string fullTileKey = "full";
       private const string cornerTileKey = "corner";
       private const string peninsulaTileKey = "peninsula";
-
-      private List<Bounds> allRoomsBounds;
 
       private LevelGenerationState(LevelViewModel viewModel, LevelGenerationStateConfig config, IAssetsLoader assetsLoader) : base(viewModel) {
          _config = config;
@@ -33,22 +33,19 @@ namespace SecretHostel.DreamRogue {
             { assetsLoader.Load<Material>("Materials", "floor-gray") },
             { assetsLoader.Load<Material>("Materials", "floor-darkgray") }
          };
-
-         allRoomsBounds = new();
       }
 
       public override void EnterState() {
-         GenerateLevelBox();
+         GenerateLevelBoxAsync();
       }
 
-      private void GenerateLevelBox() {
-         var levelSize = new Vector2Int(6, 6);
+      private void GenerateLevelBoxAsync() {
+         var levelSize = new Vector2Int(_config.MaxWidth, _config.MaxHeight);
          var chunks = new ChunkType[levelSize.x, levelSize.y];
 
-         var chunkSize = new Vector2Int(12, 12);
          var offset = new Vector2(0.5f, 0.5f);
 
-         Set1x1ChunksNoAlloc(chunks);
+         CreateLevelShapeNoAlloc(chunks, 20);
          Set2x2ChunksNoAlloc(chunks, 0.1f);
          Set1x2ChunksNoAlloc(chunks, 0.1f);
          Set2x1ChunksNoAlloc(chunks, 0.1f);
@@ -57,25 +54,73 @@ namespace SecretHostel.DreamRogue {
          Set2x2TopLeftCornerChunksNoAlloc(chunks, 0.1f);
          Set2x2TopRightCornerChunksNoAlloc(chunks, 0.1f);
 
+         SpawnExits(chunks);
+
          for (int x = 0; x < levelSize.x; x++) {
             for (int y = 0; y < levelSize.y; y++) {
-               var position = new Vector2(x + x * chunkSize.x, y + y * chunkSize.y) + offset;
+               var position = new Vector2(x + x * _config.ChunkSize, y + y * _config.ChunkSize) + offset;
 
-               var chunk = new Chunk(position, chunkSize, type: chunks[x, y]);
+               var chunk = new Chunk(position, new Vector2Int(_config.ChunkSize, _config.ChunkSize), type: chunks[x, y]);
 
                SpawnChunk(chunk);
             }
          }
       }
 
-      private void Set1x1ChunksNoAlloc(ChunkType[,] chunks) {
-         var width = chunks.GetLength(0);
-         var height = chunks.GetLength(1);
+      private void CreateLevelShapeNoAlloc(ChunkType[,] buffer, int targetVolume) {
+         var width = buffer.GetLength(0);
+         var height = buffer.GetLength(1);
 
-         for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-               chunks[x, y] = ChunkType.Normal;
+         Assert.That(width * height >= targetVolume)
+               .Throws("Target volume value is higher than maximum possible with given matrix width and height values.");
+
+         var previousIterationPositions = new Queue<Vector2Int>();
+
+         var startPosition = new Vector2Int(Random.Range(0, width), Random.Range(0, height));
+         buffer[startPosition.x, startPosition.y] = ChunkType.Normal;
+
+         previousIterationPositions.Enqueue(startPosition);
+
+         var currentVolume = 1;
+
+         var directions = new Vector2Int[4] { Vector2Int.up, Vector2Int.down, Vector2Int.right, Vector2Int.left };
+
+         while (currentVolume < targetVolume) {
+            var currentIterationPositions = new Queue<Vector2Int>();
+
+            while (previousIterationPositions.TryDequeue(out Vector2Int position)) {
+               if (currentVolume == targetVolume) {
+                  break;
+               }
+
+               foreach (var direction in directions) {
+                  var newPosition = position + direction;
+
+                  var spawnChance = currentIterationPositions.Count < 3
+                     ? 1f
+                     : 0.5f;
+
+                  if (Random.value > spawnChance) {
+                     continue;
+                  }
+
+                  if (newPosition.x < 0 || newPosition.y < 0 || newPosition.x >= width || newPosition.y >= height) {
+                     continue;
+                  }
+
+                  if (buffer[newPosition.x, newPosition.y] != ChunkType.None) {
+                     continue;
+                  }
+
+                  buffer[newPosition.x, newPosition.y] = ChunkType.Normal;
+
+                  currentIterationPositions.Enqueue(newPosition);
+
+                  currentVolume++;
+               }
             }
+
+            previousIterationPositions = currentIterationPositions;
          }
       }
 
@@ -357,49 +402,11 @@ namespace SecretHostel.DreamRogue {
          }
       }
 
-      private void RemoveRoomImpossibleExits(Chunk room) {
-         room.Exits &= ~GetExcludeExits(room);
-      }
-
-      private Exits GetExcludeExits(Chunk room) {
-         var roomPosition = room.Position.ToXZYVector3();
-         var roomSize = room.Size.ToXZYVector3();
-
-         var roomHalfWidth = roomSize.But(z: 0) / 2;
-         var roomHalfLength = roomSize.But(x: 0) / 2;
-
-         var offset = 6f;
-
-         var checkPositions = new Dictionary<Exits, Vector3> {
-            { Exits.Top, roomPosition + (roomHalfLength + Vector3.forward * offset) },
-            { Exits.Bottom, roomPosition - (roomHalfLength + Vector3.forward * offset) },
-            { Exits.Right, roomPosition + (roomHalfWidth + Vector3.right * offset) },
-            { Exits.Left, roomPosition - (roomHalfWidth + Vector3.right * offset) }
-         };
-
-         Exits excludeExits = 0;
-
-         Debug.Log($"Room at {roomPosition}");
-
-         foreach (var pair in checkPositions) {
-            var exit = pair.Key;
-            var position = pair.Value;
-
-            var bounds = new Bounds(position, Vector3.one);
-
-            var result = allRoomsBounds.Any((b) => b.Intersects(bounds));
-
-            if (result) {
-               excludeExits |= exit;
-            }
-
-            Debug.Log($"{exit} => {result}");
+      private void SpawnChunk(Chunk chunk) {
+         if (chunk.Type == ChunkType.None) {
+            return;
          }
 
-         return excludeExits;
-      }
-
-      private void SpawnChunk(Chunk chunk) {
          var offset = chunk.Position - chunk.Size / 2;
 
          var size = chunk.Type switch {
@@ -411,7 +418,7 @@ namespace SecretHostel.DreamRogue {
             ChunkType.BottomPeninsula => chunk.Size + Vector2Int.up,
 
             _ => chunk.Size
-         } ;
+         };
 
          var floor = new GameObjectTile[size.x, size.y];
 
@@ -433,8 +440,75 @@ namespace SecretHostel.DreamRogue {
                PlaceTile(tile.Prefab, tilePosition, Quaternion.Euler(tile.EulerRotation), tile.Material);
             }
          }
+      }
 
-        // GenerateFloorExits(chunk);
+      private void SpawnExits(ChunkType[,] chunks) {
+         var width = chunks.GetLength(0);
+         var height = chunks.GetLength(1);
+
+         var directions = new Vector2Int[4] { Vector2Int.up, Vector2Int.down, Vector2Int.right, Vector2Int.left };
+
+         var prefab = floorTilesPrefabs[fullTileKey];
+         var rotation = Quaternion.Euler(270f, 0f, 0f);
+         var offset = 0.5f;
+
+         for (int x = 0; x < width; x += 1) {
+            var yInit = x == 0 ? 0 : 1;
+
+            for (int y = yInit; y < height; y += 1) {
+               foreach (var direction in directions) {
+                  var neighborChunkPosition = new Vector2Int(x, y) + direction;
+
+                  if (neighborChunkPosition.x < 0 || neighborChunkPosition.y < 0 || neighborChunkPosition.x >= width || neighborChunkPosition.y >= height) {
+                     continue;
+                  }
+
+                  if (chunks[neighborChunkPosition.x, neighborChunkPosition.y] == ChunkType.None) {
+                     continue;
+                  }
+
+                  if (direction == Vector2Int.up) {
+                     var tileX = x + x * _config.ChunkSize + offset;
+                     var tileZ = y + y * _config.ChunkSize + _config.ChunkSize / 2 + offset;
+
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+                     PlaceTile(prefab, new Vector3(tileX - 1, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+                     
+                     continue;
+                  }
+
+                  if (direction == Vector2Int.down) {
+                     var tileX = x + x * _config.ChunkSize + offset;
+                     var tileZ = y + y * _config.ChunkSize - _config.ChunkSize / 2 - 1 + offset;
+
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+                     PlaceTile(prefab, new Vector3(tileX - 1, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+
+                     continue;
+                  }
+
+                  if (direction == Vector2Int.left) {
+                     var tileX = x + x * _config.ChunkSize - _config.ChunkSize / 2 - 1 + offset;
+                     var tileZ = y + y * _config.ChunkSize + offset;
+
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ - 1), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+
+                     continue;
+                  }
+
+                  if (direction == Vector2Int.right) {
+                     var tileX = x + x * _config.ChunkSize + _config.ChunkSize / 2 + offset;
+                     var tileZ = y + y * _config.ChunkSize + offset;
+
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+                     PlaceTile(prefab, new Vector3(tileX, 0, tileZ - 1), rotation, floorTilesMaterials[Random.Range(0, floorTilesMaterials.Count)]);
+
+                     continue;
+                  }
+               }
+            }
+         }
       }
 
       private void CreateFloor1x1TilesNoAlloc(GameObjectTile[,] floor) {
@@ -663,6 +737,7 @@ namespace SecretHostel.DreamRogue {
       }
 
       private enum ChunkType {
+         None,
          Normal,
          TopLeftCorner,
          TopRightCorner,

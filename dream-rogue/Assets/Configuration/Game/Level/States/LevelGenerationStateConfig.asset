@@ -12,3 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa352068fdb613c49b1559cb9ed9474e, type: 3}
   m_Name: LevelGenerationStateConfig
   m_EditorClassIdentifier: 
+  <MaxWidth>k__BackingField: 6
+  <MaxHeight>k__BackingField: 6
+  <ChunkSize>k__BackingField: 12
