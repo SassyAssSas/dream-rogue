@@ -98,7 +98,7 @@ namespace SecretHostel.DreamRogue {
 
                   var spawnChance = currentIterationPositions.Count < 3
                      ? 1f
-                     : 0.5f;
+                     : 0.1f;
 
                   if (Random.value > spawnChance) {
                      continue;
@@ -452,10 +452,14 @@ namespace SecretHostel.DreamRogue {
          var rotation = Quaternion.Euler(270f, 0f, 0f);
          var offset = 0.5f;
 
-         for (int x = 0; x < width; x += 1) {
+         for (int x = 0; x < width; x++) {
             var yInit = x == 0 ? 0 : 1;
 
-            for (int y = yInit; y < height; y += 1) {
+            for (int y = yInit; y < height; y += 2) {
+               if (chunks[x, y] == ChunkType.None) {
+                  continue;
+               }
+
                foreach (var direction in directions) {
                   var neighborChunkPosition = new Vector2Int(x, y) + direction;
 
